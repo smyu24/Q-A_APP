@@ -1,0 +1,11 @@
+﻿websites,educational,,0
+https://github.com/,educational,,1
+https://google.com/,educational,,2
+https://microsoft.com/,educational,,3
+websites,educational,,0
+https://github.com/,educational,,1
+https://google.com/,social,,2
+https://microsoft.com/,safe,,3
+websites,unsafe,,0
+https://github.com/,unsafe,,1
+https://google.com/,unsafe,,2
