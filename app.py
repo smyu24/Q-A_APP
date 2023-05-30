@@ -1,112 +1,115 @@
-import streamlit as st
-import csv
-
-st.set_page_config(layout="wide", page_title="Q & A app")
-
-labels = ["safe","unsafe","social","educational"]
-
-def update_count(count):
-  with open("counter", "w") as f:
-    f.truncate()
-    f.write(f"{count}")
-
-def write_label(w,label,notes,count):
-  with open('labeled-dataset.csv','a') as fd:
-    fd.write(f"{w},{label},{notes},{count}\n")
-
-def insert_button(columns,labels,i,label_buttons):
-  with columns[i]:
-    b = st.button(l)
-    label_buttons.append(b)
-
-import pandas as pd
+import datetime
 import sqlite3
+import pandas as pd
+from streamlit_tags import *
+import streamlit as st
+table_schema_1 = """
+CREATE TABLE "UpdatedQuestionDetails" ("item_id" varchar(255), "section" varchar(255), "prompt" varchar(255), "body" varchar(255), "passage_directions" varchar(255), "passage_attribution" varchar(255), "passage_body" varchar(255), "style" varchar(255), "correct_choice" varchar(255), "rationale" varchar(255), "a" varchar(255), "b" varchar(255), "c" varchar(255), "d" varchar(255), "tags" varchar(255), "note" varchar(255), "issues" varchar(255), "datetime" varchar(255))
+"""  # ADD QUESTION NUMBER; multiply that question number with 14 to get the correct sessionstate
+table_schema_3 = """
+CREATE TABLE "Tags_Primary" ("Per_topic_Main" varchar(255), "Per_topic_sub" varchar(255) , "ID" varchar(255))
+"""
+table_schema_4 = """
+CREATE TABLE "Tags_Secondary" ("Math_Category" varchar(255), "Category_Two_Tags" varchar(255) , "ID" varchar(255))
+"""
+st.set_page_config(layout="wide", page_title="Q & A app")
 
 conn = sqlite3.connect("satsuite.sqlite", isolation_level=None,
                        detect_types=sqlite3.PARSE_COLNAMES)
-db_df = pd.read_sql_query("SELECT * FROM questionDetails WHERE section='Math'", conn)
-column_ID=[]
+cur = conn.cursor()
+
+db_df = pd.read_sql_query(
+    "SELECT * FROM questionDetails WHERE section='Math'", conn)
+
+column_ID = []
 for i in db_df.columns:
     column_ID.append(i)
 
-row_data=[]
-tick=0
-for row,index in db_df.iterrows():
-    # Process the row data
-    # print(index)
-    print(row)
-    for i in range(len(column_ID)):
-        # print(db_df.at[row, column_ID[i]])
-        row_data.append(db_df.at[row, column_ID[i]])
-        #item_id,section,prompt,body,passage_directions,passage_attribution,passage_body,style,correct_choice,rationale,a,b,c,d
-    if tick==0:
-        break
+row_data = []
+
+# Initialization
+if 'key' not in st.session_state:
+    st.session_state.key = 0
+
+last_page = len(db_df.index)
+
+row1_1, row1_2, row1_3, row1_4 = st.columns((8, 1, 1, 1))
+with row1_1:
+    st.title("Q & A app")
+
+with row1_2:
+    prev = st.button("< Previous", key="prev", help="Regress By One Question")
+
+with row1_3:
+    next = st.button("Next >", key="next", help="Proceed By One Question")
+
+with row1_4:
+    pgNav = st.number_input("Page To Travel To", min_value=0, max_value=last_page, value=st.session_state.key, key="pageNav")
+    saved = st.button("Save", key="save", help="Page Change Confirm")
+
+if saved:
+    st.session_state.key = pgNav
+
+if next:  # and IS NOT AT THE END!!!
+    if st.session_state.key + 1 > last_page:
+        st.session_state.key = 0
     else:
-        tick=tick+1
+        st.session_state.key += 1
+if prev:  # AND IS NOT BELOW INDEX = 0
+    if not st.session_state.key - 1 < 0:
+        st.session_state.key -= 1
 
-st.title("Q & A app")
-    
+for i in range(14):
+    row_data.append(db_df.at[st.session_state.key, column_ID[i]])
 
-row2_1, row2_2, row2_3, row2_4 = st.columns((0.75, 2.25, 1, 1))
+row2_1, row2_2, row2_3 = st.columns((0.75, 2.25, 2))
 
-# row_data is an array that collects data from the database in repeatable chains of 14 (columns)
-for i in range(len(row_data) // 14):
-  #item_id,section,prompt,body,passage_directions,passage_attribution,passage_body,style,correct_choice,rationale,a,b,c,d
-  with row2_1:
-    st.markdown(f"**Item_id:** {row_data[(i*14)+0]}", unsafe_allow_html=True)
-    st.markdown(f"**Section:** {row_data[(i*14)+1]}", unsafe_allow_html=True)
+with row2_1:# row_data is an array that collects data from the database in repeatable chains of 14 (columns); # item_id,section,prompt,body,passage_directions,passage_attribution,passage_body,style,correct_choice,rationale,a,b,c,d
+    st.markdown(f"**Item_id:** {row_data[0]}", unsafe_allow_html=True)
+    st.markdown(f"**Section:** {row_data[1]}", unsafe_allow_html=True)
+    st.markdown(
+        f"**passage_directions:** {row_data[4]}", unsafe_allow_html=True)
+    st.markdown(
+        f"**passage_attribution:** {row_data[5]}", unsafe_allow_html=True)
+    st.markdown(f"**passage_body:** {row_data[6]}", unsafe_allow_html=True)
+    st.markdown(f"**style:** {row_data[7]}", unsafe_allow_html=True)
 
-  with row2_2:
-    st.markdown(f"**prompt:** {row_data[(i*14)+2]}", unsafe_allow_html=True)
-    st.markdown(f"**body:** {row_data[(i*14)+3]}", unsafe_allow_html=True)
+with row2_2:
+    st.markdown(f"**prompt:** {row_data[2]}", unsafe_allow_html=True)
+    st.markdown(f"**body:** {row_data[3]}", unsafe_allow_html=True)
 
-  with row2_3:
-    st.markdown(f"**passage_directions:** {row_data[(i*14)+4]}", unsafe_allow_html=True)
-    st.markdown(f"**passage_attribution:** {row_data[(i*14)+5]}", unsafe_allow_html=True)
-    st.markdown(f"**passage_body:** {row_data[(i*14)+6]}", unsafe_allow_html=True)
-    st.markdown(f"**style:** {row_data[(i*14)+7]}", unsafe_allow_html=True)
+with row2_3:
+    with st.form('ID', clear_on_submit=True):
+        cur.execute("SELECT Per_topic_Main, Per_topic_sub, ID FROM Tags_Primary")
+        prim_query_tag = cur.fetchall()
+        formattedTagger=[]
+        for row in prim_query_tag:
+            formattedTagger.append(f"{row[2]} - {row[1]} - {row[0]}")
+        tags = st.multiselect('Category Tags', formattedTagger, key="tag")
+        notes = st.text_area('Note')
+        issue = st.radio('Issues?', ['No', 'Yes'], key="issues")
+        if st.form_submit_button('Save'):
+            tag2 = ', '.join(tags)
+            cur.execute("SELECT item_id FROM UpdatedQuestionDetails WHERE item_id=:item_id", {'item_id': row_data[0]})
+            select_statement = cur.fetchall()
+            if len(select_statement) == 0:
+                cur.execute("INSERT INTO UpdatedQuestionDetails (item_id,section,prompt,body,passage_directions,passage_attribution,passage_body,style,correct_choice,rationale,a,b,c,d,tags,note,issues,datetime) VALUES (:item_id,:section,:prompt,:body,:passage_directions,:passage_attribution,:passage_body,:style,:correct_choice,:rationale,:a,:b,:c,:d,:tags,:note,:issues,:datetime)",
+                            {'item_id': row_data[0], 'section': row_data[1], 'prompt': row_data[2], 'body': row_data[3], 'passage_directions': row_data[4], 'passage_attribution': row_data[5], 'passage_body': row_data[6], 'style': row_data[7],
+                             'correct_choice': row_data[8], 'rationale': row_data[9], 'a': row_data[10], 'b': row_data[11], 'c': row_data[12], 'd': row_data[13], 'tags': tag2, 'note': notes, 'issues': issue, 'datetime': datetime.datetime.now()})
+            else: 
+                cur.execute("UPDATE UpdatedQuestionDetails SET item_id=:item_id, section=:section, prompt=:prompt, body=:body,passage_directions=:passage_directions,passage_attribution=:passage_attribution,passage_body=:passage_body,style=:style,correct_choice=:correct_choice,rationale=:rationale,a=:a,b=:b,c=:c,d=:d,tags=:tags,note=:note,issues=:issues,datetime=:datetime",
+                            {'item_id': row_data[0], 'section': row_data[1], 'prompt': row_data[2], 'body': row_data[3], 'passage_directions': row_data[4], 'passage_attribution': row_data[5], 'passage_body': row_data[6], 'style': row_data[7], 'correct_choice': row_data[8], 'rationale': row_data[9], 'a': row_data[10], 'b': row_data[11], 'c': row_data[12], 'd': row_data[13], 'tags': tag2, 'note': notes, 'issues': issue, 'datetime': datetime.datetime.now()})
+            conn.commit()
+            st.experimental_rerun()
 
-  with row2_4:
-    st.markdown(f"**correct_choice:** {row_data[(i*14)+8]}", unsafe_allow_html=True)
-    st.markdown(f"**rationale:** {row_data[(i*14)+9]}", unsafe_allow_html=True)
-    st.markdown(f"**a:** {row_data[(i*14)+10]}", unsafe_allow_html=True)
-    st.markdown(f"**b:** {row_data[(i*14)+11]}", unsafe_allow_html=True)
-    st.markdown(f"**c:** {row_data[(i*14)+12]}", unsafe_allow_html=True)
-    st.markdown(f"**d:** {row_data[(i*14)+13]}", unsafe_allow_html=True)
-  
-  "\n\n\n\n\n"
-  
-st.button("_")
 
+row3_1, = st.columns((1))
+with row3_1:
+    st.markdown(f"**correct_choice:** {row_data[8]}", unsafe_allow_html=True)
+    st.markdown(f"**rationale:** {row_data[9]}", unsafe_allow_html=True)
+    st.markdown(f"**a:** {row_data[10]}", unsafe_allow_html=True)
+    st.markdown(f"**b:** {row_data[11]}", unsafe_allow_html=True)
+    st.markdown(f"**c:** {row_data[12]}", unsafe_allow_html=True)
+    st.markdown(f"**d:** {row_data[13]}", unsafe_allow_html=True)
 
-
-with open("counter", "r") as f:
-  count = int(f.readline())
-
-websites,label_buttons = [],[]
-
-with open('websites.csv', newline='') as csvfile:
-  for temp in csv.reader(csvfile):
-    websites.append(temp[0])
-  websites.append("DONE")
-
-if count<len(websites):
-  w = websites[count]
-  if w=="DONE":
-      st.balloons()
-      if st.button("Reset"):
-        update_count(1) 
-  else:    
-    st.markdown(f'## [{w}]({w})')
-    columns = st.columns(len(labels))
-
-    for i,l in enumerate(labels):
-        insert_button(columns,labels,i,label_buttons)
-
-    notes=st.text_input("Notes")
-
-    for i,b in enumerate(label_buttons):
-      if b:
-        write_label(websites[count-1],labels[i],notes,count-1)
-        count += 1
-        update_count(count)
+# TODO = "MAKE A REVERT TO ORIGINAL BUTTON; Create a db table. in it push db changes to it as modified version. make sure to keep in mind that if error, then call original version. Push everything from the problem, date of modification, notes, issues, time."
