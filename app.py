@@ -36,13 +36,15 @@ last_page = len(db_df.index)
 row1_1, row1_2, row1_3, row1_4 = st.columns((8, 1, 1, 1))
 with row1_1:
     st.title("Q & A app")
-    st.write(f"Current Page Number: {st.session_state.key}")
+    st.info(f"Current Page Number: {st.session_state.key}")
 
 with row1_2:
     prev = st.button("< Previous", key="prev", help="Regress By One Question")
 
+
 with row1_3:
     next = st.button("Next >", key="next", help="Proceed By One Question")
+
 
 with row1_4:
     pgNav = st.number_input("Page To Travel To", min_value=0, max_value=last_page, value=st.session_state.key, key="pageNav")
@@ -122,5 +124,4 @@ with row3_1:
     st.markdown(f"**b:** {row_data[11]}", unsafe_allow_html=True)
     st.markdown(f"**c:** {row_data[12]}", unsafe_allow_html=True)
     st.markdown(f"**d:** {row_data[13]}", unsafe_allow_html=True)
-st.experimental_rerun()
 # TODO = "MAKE A REVERT TO ORIGINAL BUTTON; Create a db table. in it push db changes to it as modified version. make sure to keep in mind that if error, then call original version. Push everything from the problem, date of modification, notes, issues, time."
