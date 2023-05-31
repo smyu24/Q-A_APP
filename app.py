@@ -36,7 +36,6 @@ last_page = len(db_df.index)
 row1_1, row1_2, row1_3, row1_4 = st.columns((8, 1, 1, 1))
 with row1_1:
     st.title("Q & A app")
-    st.info(f"Current Page Number: {st.session_state.key}")
 
 with row1_2:
     prev = st.button("< Previous", key="prev", help="Regress By One Question")
