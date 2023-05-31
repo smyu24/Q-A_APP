@@ -1,7 +1,6 @@
 import datetime
 import sqlite3
 import pandas as pd
-from streamlit_tags import *
 import streamlit as st
 table_schema_1 = """
 CREATE TABLE "UpdatedQuestionDetails" ("item_id" varchar(255), "section" varchar(255), "prompt" varchar(255), "body" varchar(255), "passage_directions" varchar(255), "passage_attribution" varchar(255), "passage_body" varchar(255), "style" varchar(255), "correct_choice" varchar(255), "rationale" varchar(255), "a" varchar(255), "b" varchar(255), "c" varchar(255), "d" varchar(255), "tags" varchar(255), "note" varchar(255), "issues" varchar(255), "datetime" varchar(255))
@@ -79,7 +78,13 @@ with row2_2:
     st.markdown(f"**body:** {row_data[3]}", unsafe_allow_html=True)
 
 with row2_3:
+    cur.execute("SELECT item_id FROM UpdatedQuestionDetails WHERE item_id=:item_id", {'item_id': row_data[0]})
+    tagged_status = cur.fetchall()
+
     with st.form('ID', clear_on_submit=True):
+        if len(tagged_status) != 0:
+            st.write("This problem has already been tagged")
+
         cur.execute("SELECT Per_topic_Main, Per_topic_sub, ID FROM Tags_Primary")
         prim_query_tag = cur.fetchall()
         formattedTagger=[]
