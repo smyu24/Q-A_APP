@@ -19,7 +19,7 @@ conn = sqlite3.connect("satsuite.sqlite", isolation_level=None,
 cur = conn.cursor()
 
 db_df = pd.read_sql_query(
-    "SELECT * FROM questionDetails WHERE section='Math'", conn)
+    sql="SELECT * FROM questionDetails WHERE section='Math'", con=conn)
 
 column_ID = []
 for i in db_df.columns:
@@ -34,8 +34,10 @@ if 'key' not in st.session_state:
 last_page = len(db_df.index)
 
 row1_1, row1_2, row1_3, row1_4 = st.columns((8, 1, 1, 1))
+
 with row1_1:
     st.title("Q & A app")
+    # st.info(f"Current Page Number: {st.session_state.key}")
 
 with row1_2:
     prev = st.button("< Previous", key="prev", help="Regress By One Question")
