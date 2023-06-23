@@ -7,8 +7,7 @@ Q-A_App installation and usage
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install foobar.
 
 ```bash
-pip install streamlit
-pip install pandas
+follow requirements.txt
 ```
 
 ## Usage
