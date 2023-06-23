@@ -1,2 +1,3 @@
-streamlit
-pandas 
+streamlitpip 
+streamlit-authenticator
+streamlit-on-Hover-tabs
